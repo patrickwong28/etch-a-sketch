@@ -6,6 +6,8 @@ const colorPicker = document.getElementById('colorPicker');
 const brushBtn = document.getElementById('brushBtn');
 const eraserBtn = document.getElementById('eraserBtn');
 const rainbowBtn = document.getElementById('rainbowBtn');
+const shadeBtn = document.getElementById('shadeBtn');
+const lightenBtn = document.getElementById('lightenBtn');
 const clearBtn = document.getElementById('clearBtn');
 
 const DEFAULT_COLOR = '#000000';
@@ -35,10 +37,14 @@ function setActiveBtn(newMode) {
     if (currentMode === 'brush') brushBtn.classList.remove('active');
     else if (currentMode === 'eraser')  eraserBtn.classList.remove('active');
     else if (currentMode === 'rainbow') rainbowBtn.classList.remove('active');
+    else if (currentMode === 'shade') shadeBtn.classList.remove('active');
+    else if (currentMode === 'lighten') lightenBtn.classList.remove('active');
     
     if (newMode === 'brush') brushBtn.classList.add('active');
     else if (newMode === 'eraser')  eraserBtn.classList.add('active');
     else if (newMode === 'rainbow') rainbowBtn.classList.add('active');
+    else if (newMode === 'shade') shadeBtn.classList.add('active');
+    else if (newMode === 'lighten') lightenBtn.classList.add('active');
 
     currentMode = newMode;
 }
@@ -60,9 +66,31 @@ function changeColor(event) {
     else if (currentMode === 'eraser') {
         event.target.style.backgroundColor = 'white';
     }
+    else {
+        const hexColor = getHex(event.target.style.backgroundColor);
+        console.log(hexColor);
+        let newShade = '';
+
+        if (currentMode === 'shade') newShade = getNewShade(hexColor, -10);
+        else if (currentMode === 'lighten') newShade = getNewShade(hexColor, 10);
+
+        console.log('shade changed');
+            
+        event.target.style.backgroundColor = newShade;
+    }
 }
 
-function newShade(hexColor, magnitude) {
+function getHex(rgb) {
+    let rgbList = rgb.replace(/[^\d,]/g, '').split(',');   
+    return componentToHex(parseInt(rgbList[0])) + componentToHex(parseInt(rgbList[1])) + componentToHex(parseInt(rgbList[2]))   ;
+}
+
+function componentToHex(component) {
+    const hex = component.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+
+function getNewShade(hexColor, magnitude) {
     hexColor = hexColor.replace(`#`, ``);
     if (hexColor.length === 6) {
         const decimalColor = parseInt(hexColor, 16);
@@ -75,9 +103,11 @@ function newShade(hexColor, magnitude) {
         let blue = ((decimalColor >> 8) & 0x00ff) + magnitude;
         blue > 255 && (blue = 255);
         blue < 0 && (blue = 0);
+        console.log(`#${(green | (blue << 8) | (red << 16)).toString(16)}`)
         return `#${(green | (blue << 8) | (red << 16)).toString(16)}`;
     }
     
+    console.log(hexColor);
     return hexColor;
 }
 
@@ -89,6 +119,7 @@ function loadGrid() {
         pixelElement.setAttribute('id', 'pixel');
         pixelElement.style.width = sizeOfPixel;
         pixelElement.style.height = sizeOfPixel;
+        pixelElement.style.backgroundColor = 'rgb(255, 255, 255)';
         pixelElement.addEventListener('mousedown', () => mouseDown = true);
         pixelElement.addEventListener('mouseup', () => mouseDown = false);
         pixelElement.addEventListener('mousemove', (event) => {
@@ -115,6 +146,8 @@ slider.addEventListener('input', (event) => setGridSize(event.target.value));
 brushBtn.addEventListener('click', () => setActiveBtn('brush'));
 eraserBtn.addEventListener('click', () => setActiveBtn('eraser'));
 rainbowBtn.addEventListener('click', () => setActiveBtn('rainbow'));
+shadeBtn.addEventListener('click', () => setActiveBtn('shade'));
+lightenBtn.addEventListener('click', () => setActiveBtn('lighten'));
 clearBtn.addEventListener('click', () => reloadGrid());
 
 // <--------------------------------------------------------------------------------------------------------------------->
